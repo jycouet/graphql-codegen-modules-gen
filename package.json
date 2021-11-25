@@ -1,0 +1,16 @@
+{
+  "name": "graphql-codegen-modules-gen",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {},
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {},
+  "dependencies": {
+    "yargs": "^17.2.1"
+  },
+  "bin": "./src/cli.js",
+  "type": "module"
+}
