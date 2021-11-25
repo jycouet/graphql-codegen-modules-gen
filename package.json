@@ -1,21 +1,29 @@
 {
   "name": "graphql-codegen-modules-gen",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
-  "main": "index.js",
   "scripts": {
+    "build": "rollup --config ./rollup.config.js",
+    "pack": "yarn pack",
     "publish": "yarn publish"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
-  "devDependencies": {},
+  "license": "MIT",
+  "devDependencies": {
+    "rollup": "^2.60.1"
+  },
   "dependencies": {
-    "yargs": "^17.2.1"
+    "yargs": "17.2.1"
   },
   "peerDependencies": {
-    "yargs": "^17.2.1"
+    "yargs": "17.2.1"
   },
-  "bin": "./src/cli.js",
-  "type": "module"
+  "bin": {
+    "graphql-codegen-modules-gen": "./build/cli.cjs"
+  },
+  "type": "module",
+  "volta": {
+    "node": "16.13.0"
+  }
 }
