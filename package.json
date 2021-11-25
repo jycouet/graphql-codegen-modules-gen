@@ -1,6 +1,6 @@
 {
   "name": "graphql-codegen-modules-gen",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "",
   "scripts": {
     "build": "rollup --config ./rollup.config.js",
@@ -11,12 +11,10 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "rollup": "^2.60.1"
+    "rollup": "^2.60.1",
+    "rollup-plugin-add-shebang": "^0.3.1"
   },
   "dependencies": {
-    "yargs": "17.2.1"
-  },
-  "peerDependencies": {
     "yargs": "17.2.1"
   },
   "bin": {

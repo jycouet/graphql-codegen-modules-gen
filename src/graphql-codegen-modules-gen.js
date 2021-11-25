@@ -1,4 +1,10 @@
-import { readdirSync, writeFileSync, readFileSync, existsSync } from "fs";
+import {
+  readdirSync,
+  writeFileSync,
+  readFileSync,
+  existsSync,
+  mkdirSync,
+} from "fs";
 import { join } from "path";
 
 // const modulePath = "./packages/main/src/lib/modules";
@@ -56,6 +62,10 @@ export function gen(modulePath) {
         dataResolvers.push(`  ${getFileWODots(resolver)},`);
       });
       dataResolvers.push(`];`);
+
+      if (!existsSync(join(modulePath, moduleName, genFolder))) {
+        mkdirSync(join(modulePath, moduleName, genFolder));
+      }
 
       writeFileSync(
         join(modulePath, moduleName, genFolder, "resolvers.ts"),

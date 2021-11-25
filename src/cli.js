@@ -1,6 +1,6 @@
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
-import { gen } from "./graphql-codegen-modules-gen";
+import { gen } from "./graphql-codegen-modules-gen.js";
 
 const argv =
   //.help("help")
