@@ -20,9 +20,12 @@ function getDirectories(source) {
 }
 
 function getFiles(source) {
-  return readdirSync(source, { withFileTypes: true })
-    .filter((dirent) => dirent.isFile())
-    .map((dirent) => dirent.name);
+  if (existsSync(source)) {
+    return readdirSync(source, { withFileTypes: true })
+      .filter((dirent) => dirent.isFile())
+      .map((dirent) => dirent.name);
+  }
+  return [];
 }
 
 function getFileWOTS(str) {
@@ -74,12 +77,6 @@ export function gen(modulePath) {
           console.error(err);
         }
       );
-      console.log(
-        " \x1b[32m",
-        "✔",
-        "\x1b[0m",
-        `Merge resolvers [${moduleNames.length} modules]`
-      );
 
       /* typedefs.ts */
       // import { gql } from 'graphql-modules';
@@ -126,6 +123,13 @@ export function gen(modulePath) {
         }
       );
     });
+
+    console.log(
+      " \x1b[32m",
+      "✔",
+      "\x1b[0m",
+      `Merge resolvers [${moduleNames.length} modules]`
+    );
 
     console.log(
       " \x1b[32m",
