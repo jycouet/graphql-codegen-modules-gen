@@ -1,12 +1,13 @@
 {
   "name": "graphql-codegen-modules-gen",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "",
   "scripts": {
     "test": "node ./src/cli /home/jycouet/udev/gh/my-minion-mr/packages/main/src/lib/modules",
     "build": "rollup --config ./rollup.config.js",
     "pack": "yarn pack",
-    "publish": "yarn publish"
+    "prepush": "yarn build",
+    "push": "yarn publish"
   },
   "keywords": [],
   "author": "",
