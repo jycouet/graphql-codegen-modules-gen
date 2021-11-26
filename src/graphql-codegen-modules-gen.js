@@ -35,6 +35,15 @@ function getFileWOTS(str) {
 function getFileWODots(str) {
   return getFileWOTS(str).replace(".", "");
 }
+
+function getGreen(str) {
+  return "\x1b[32m" + str + "\x1b[0m";
+}
+
+function pad(num, size) {
+  var s = "000000000" + num;
+  return s.substr(s.length - size);
+}
 /* End   - Functions Helpers*/
 
 export function gen(modulePath) {
@@ -122,20 +131,20 @@ export function gen(modulePath) {
           console.error(err);
         }
       );
+
+      console.log(
+        ` ${getGreen("✔")}  Merge -`,
+        `${getGreen(pad(typedefsFiles.length, 2))} Typedefs`,
+        `|`,
+        `${getGreen(pad(resolversFiles.length, 2))} Resolvers`,
+        `-`,
+        `Module [${getGreen(moduleName)}]`
+      );
     });
 
     console.log(
-      " \x1b[32m",
-      "✔",
-      "\x1b[0m",
-      `Merge resolvers [${moduleNames.length} modules]`
-    );
-
-    console.log(
-      " \x1b[32m",
-      "✔",
-      "\x1b[0m",
-      `Merge typedefs  [${moduleNames.length} modules]`
+      ` ${getGreen("✔")}  Merge done`,
+      `[${getGreen(moduleNames.length)} modules]`
     );
   } else {
     console.error(`❌ '${modulePath}' is not a valid folder path`);
