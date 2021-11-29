@@ -10,6 +10,7 @@ import { join } from "path";
 // const modulePath = "./packages/main/src/lib/modules";
 const resolversFolder = "resolvers";
 const typedefsFolder = "typedefs";
+const providersFolder = "providers";
 const genFolder = "_gen";
 
 /* Start - Functions Helpers */
@@ -44,14 +45,36 @@ function pad(num, size) {
   var s = "000000000" + num;
   return s.substr(s.length - size);
 }
+
+/**
+ * toPascalCase
+ * @param {String} input
+ * @returns A string that has been converted into Pascal Case for keeping with the React Naming convention required for naming Components.
+ * @see https://stackoverflow.com/a/53952925/13301381
+ * @author kalicki2K
+ */
+function toPascalCase(input) {
+  return `${input}`
+    .replace(new RegExp(/[-_]+/, "g"), " ")
+    .replace(new RegExp(/[^\w\s]/, "g"), "")
+    .replace(
+      new RegExp(/\s+(.)(\w+)/, "g"),
+      ($1, $2, $3) => `${$2.toUpperCase() + $3.toLowerCase()}`
+    )
+    .replace(new RegExp(/\s/, "g"), "")
+    .replace(new RegExp(/\w/), (s) => s.toUpperCase());
+}
 /* End   - Functions Helpers*/
 
 export function gen(modulePath) {
   const isFolderExist = existsSync(modulePath);
   if (isFolderExist) {
+    let ctxModules = [];
     const moduleNames = getDirectories(modulePath);
     moduleNames.forEach((moduleName) => {
-      /* resolvers.ts */
+      /***************** */
+      /* 1/ resolvers.ts */
+      /***************** */
       // import { resolvers as _Mutation } from '../resolvers/_Mutation';
       // import { resolvers as _Query } from '../resolvers/_Query';
 
@@ -87,7 +110,9 @@ export function gen(modulePath) {
         }
       );
 
-      /* typedefs.ts */
+      /***************** */
+      /* 2/ typedefs.ts  */
+      /***************** */
       // import { gql } from 'graphql-modules';
 
       // export const typeDefs = gql`
@@ -133,18 +158,98 @@ export function gen(modulePath) {
       );
 
       console.log(
-        ` ${getGreen("✔")}  Merge -`,
+        `  ${getGreen("✔")}  Merge -`,
         `${getGreen(pad(typedefsFiles.length, 2))} Typedefs`,
         `|`,
         `${getGreen(pad(resolversFiles.length, 2))} Resolvers`,
         `-`,
         `Module [${getGreen(moduleName)}]`
       );
+
+      /******************* */
+      /* 3.1/ ctxModules   */
+      /******************* */
+      // Are there files starting by _ctx? file to add in the global ctxModules.ts file?
+      const providersFiles = getFiles(
+        join(modulePath, moduleName, providersFolder)
+      );
+      providersFiles.forEach((providerFile) => {
+        if (providerFile.startsWith("_ctx")) {
+          const ctxName = providerFile.replace("_ctx", "").replace(".ts", "");
+          ctxModules.push({ moduleName, ctxName });
+        }
+      });
     });
 
     console.log(
-      ` ${getGreen("✔")}  Merge done`,
+      `  ${getGreen("✔")}  Merge done`,
       `[${getGreen(moduleNames.length)} modules]`
+    );
+
+    /******************* */
+    /* 3.2/ _ctxModules   */
+    /******************* */
+    let dataCtxModules = [];
+
+    ctxModules.forEach((ctx) => {
+      dataCtxModules.push(
+        `import { getCtx${toPascalCase(ctx.ctxName)} } from '../../modules/${
+          ctx.moduleName
+        }/providers/_ctx${toPascalCase(ctx.ctxName)}';`
+      );
+    });
+
+    dataCtxModules.push(``);
+    dataCtxModules.push(
+      `// Do not type contextSoFar as it will to a circular reference`
+    );
+    dataCtxModules.push(`export function getCtxModules(contextSoFar: any) {`);
+    dataCtxModules.push(`	return {`);
+    ctxModules.forEach((ctx) => {
+      dataCtxModules.push(
+        `		...getCtx${toPascalCase(ctx.ctxName)}(contextSoFar.prisma),`
+      );
+    });
+    dataCtxModules.push(`	};`);
+    dataCtxModules.push(`}`);
+
+    writeFileSync(
+      join(modulePath, "../graphql", genFolder, "_ctxModules.ts"),
+      dataCtxModules.join("\r\n"),
+      (err) => {
+        console.error(err);
+      }
+    );
+
+    console.log(
+      `  ${getGreen("✔")}  Merge contexts for`,
+      `[${ctxModules
+        .map((c) => getGreen(c.moduleName + "#" + c.ctxName))
+        .join(",")}]`
+    );
+
+    /******************* */
+    /* 4.0/ _appModules   */
+    /******************* */
+    let dataAppModules = [];
+    moduleNames.forEach((moduleName) => {
+      dataAppModules.push(
+        `import { ${moduleName}Module } from '$lib/modules/${moduleName}';`
+      );
+    });
+    dataAppModules.push(``);
+    dataAppModules.push(`export const modules = [`);
+    moduleNames.forEach((moduleName) => {
+      dataAppModules.push(`  ${moduleName}Module,`);
+    });
+    dataAppModules.push(`];`);
+
+    writeFileSync(
+      join(modulePath, "../graphql", genFolder, "_appModules.ts"),
+      dataAppModules.join("\r\n"),
+      (err) => {
+        console.error(err);
+      }
     );
   } else {
     console.error(`❌ '${modulePath}' is not a valid folder path`);
