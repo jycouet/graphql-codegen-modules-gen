@@ -158,12 +158,11 @@ export function gen(modulePath) {
       );
 
       console.log(
-        `  ${getGreen("✔")}  Merge -`,
+        `  ${getGreen("✔")} Merge 1/ `,
         `${getGreen(pad(typedefsFiles.length, 2))} Typedefs`,
         `|`,
         `${getGreen(pad(resolversFiles.length, 2))} Resolvers`,
-        `-`,
-        `Module [${getGreen(moduleName)}]`
+        `for [${getGreen(moduleName)}]`
       );
 
       /******************* */
@@ -181,10 +180,10 @@ export function gen(modulePath) {
       });
     });
 
-    console.log(
-      `  ${getGreen("✔")}  Merge done`,
-      `[${getGreen(moduleNames.length)} modules]`
-    );
+    // console.log(
+    //   `  ${getGreen("✔")}  Merge done`,
+    //   `[${getGreen(moduleNames.length)} modules]`
+    // );
 
     /******************* */
     /* 3.2/ _ctxModules   */
@@ -200,15 +199,10 @@ export function gen(modulePath) {
     });
 
     dataCtxModules.push(``);
-    dataCtxModules.push(
-      `// Do not type contextSoFar as it will to a circular reference`
-    );
-    dataCtxModules.push(`export function getCtxModules(contextSoFar: any) {`);
+    dataCtxModules.push(`export function getCtxModules(prisma: any) {`);
     dataCtxModules.push(`	return {`);
     ctxModules.forEach((ctx) => {
-      dataCtxModules.push(
-        `		...getCtx${toPascalCase(ctx.ctxName)}(contextSoFar.prisma),`
-      );
+      dataCtxModules.push(`		...getCtx${toPascalCase(ctx.ctxName)}(prisma),`);
     });
     dataCtxModules.push(`	};`);
     dataCtxModules.push(`}`);
@@ -222,7 +216,9 @@ export function gen(modulePath) {
     );
 
     console.log(
-      `  ${getGreen("✔")}  Merge contexts for`,
+      `  ${getGreen("✔")} Merge 2/  ${getGreen(
+        pad(ctxModules.length, 2)
+      )} contexts in ${getGreen("_gen/_ctxModules.ts")} for`,
       `[${ctxModules
         .map((c) => getGreen(c.moduleName + "#" + c.ctxName))
         .join(",")}]`
@@ -250,6 +246,13 @@ export function gen(modulePath) {
       (err) => {
         console.error(err);
       }
+    );
+
+    console.log(
+      `  ${getGreen("✔")} Merge 3/  ${getGreen(
+        pad(moduleNames.length, 2)
+      )} modules  in ${getGreen("_gen/_appModules.ts")} for`,
+      `[${moduleNames.map((c) => getGreen(c)).join(",")}]`
     );
   } else {
     console.error(`❌ '${modulePath}' is not a valid folder path`);
