@@ -66,9 +66,9 @@ _replacing `./src/lib/modules` by the location of your modules_
 yarn gen-mg
 ```
 
-### ▶ (Bonus) Execut it after your usual @graphql-codegen
+### ▶ (Bonus) Execute it after your usual @graphql-codegen
 
-At the end of your `codegen.yml` file, add:
+At the end of your `codegen.yml` file, add (carefull, like this, you don't see logs.):
 
 ```
 hooks:
@@ -145,5 +145,7 @@ Now, enjoy! 🔥
 # In Addition
 
 **Merge 1/** Generate your `resolvers.ts` and `typedefs.ts` files per module
+
 **Merge 2/** Generate global `_ctxModules.ts` (merge all `_ctxXXX.ts` of each modules)
+
 **Merge 3/** Generate global `_appModules.ts` (merge all `index.ts` of each modules)
