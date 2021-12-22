@@ -6,6 +6,7 @@ import {
   mkdirSync,
 } from "fs";
 import { join } from "path";
+import { exit } from "process";
 
 // const modulePath = "./packages/main/src/lib/modules";
 const resolversFolder = "resolvers";
@@ -46,6 +47,12 @@ function pad(num, size) {
   return s.substr(s.length - size);
 }
 
+function createFolderIfNotExists(folder) {
+  if (!existsSync(folder)) {
+    mkdirSync(folder);
+  }
+}
+
 /**
  * toPascalCase
  * @param {String} input
@@ -64,11 +71,115 @@ function toPascalCase(input) {
     .replace(new RegExp(/\s/, "g"), "")
     .replace(new RegExp(/\w/), (s) => s.toUpperCase());
 }
+
+function getPrismaEnum(prismaFile) {
+  let lines = prismaFile.split("\n");
+
+  let enums = {};
+
+  let currentEnum = "";
+  lines.forEach((line) => {
+    if (currentEnum !== "") {
+      if (line.includes("}")) {
+        currentEnum = "";
+      } else {
+        enums[currentEnum].push(line.trim());
+      }
+    }
+    if (line.startsWith("enum")) {
+      const [enumKey, enumName] = line.split(" ");
+      currentEnum = toPascalCase(enumName);
+      enums[currentEnum] = [];
+    }
+    // console.log(`line`, line);
+  });
+
+  return enums;
+}
 /* End   - Functions Helpers*/
 
 export function gen(modulePath) {
   const isFolderExist = existsSync(modulePath);
   if (isFolderExist) {
+    /***************** */
+    /* 0/ Enum module  */
+    /***************** */
+    let prismaFile = readFileSync(
+      join(modulePath, "../../../prisma/schema.prisma"),
+      "utf-8"
+    );
+    let enums = getPrismaEnum(prismaFile);
+
+    createFolderIfNotExists(join(modulePath, "_enums"));
+    createFolderIfNotExists(join(modulePath, "_enums", "typedefs"));
+    for (const key in enums) {
+      const list = enums[key];
+      let enumFileData = `enum ${key} {
+  ${list.join("\n  ")}
+}`;
+      writeFileSync(
+        join(modulePath, "_enums", "typedefs", `ENUM.${key}.graphql`),
+        enumFileData
+      );
+    }
+
+    createFolderIfNotExists(join(modulePath, "_enums", "ui"));
+    createFolderIfNotExists(join(modulePath, "_enums", "ui", "lists"));
+
+    for (const key in enums) {
+      const list = enums[key];
+      let enumFileData = `import { ${key} } from '$lib/graphql/_gen/graphqlClient';
+
+export function getList${key}() {
+  let items: { key: ${key}; value: string }[] = [];
+
+  ${list
+    .map((c) => {
+      return `items.push({ key: ${key}.${toPascalCase(
+        c.toLowerCase()
+      )}, value: '${toPascalCase(c.toLowerCase())}' });`;
+    })
+    .join("\n  ")}
+
+  return items;
+}
+`;
+      // Write this file only if it doesn't exist!
+      // Like this, you can change the value with text that will be displayed in the UI!
+      // TODO:
+      // - List or obj?!
+      // - Internationalisation?! (https://github.com/sveltejs/kit/issues/553)
+      if (
+        !existsSync(join(modulePath, "_enums", "ui", "lists", `List${key}.ts`))
+      ) {
+        writeFileSync(
+          join(modulePath, "_enums", "ui", "lists", `List${key}.ts`),
+          enumFileData
+        );
+      }
+    }
+
+    writeFileSync(
+      join(modulePath, "_enums", `index.ts`),
+      `import { createModule } from 'graphql-modules';
+import { typeDefs } from './_gen/typedefs';
+
+export const _enumsModule = createModule({
+	id: 'enums-module',
+	typeDefs,
+});
+`
+    );
+
+    const enumsKeys = Object.keys(enums).map((key) => {
+      return key;
+    });
+    console.log(
+      `  ${getGreen("✔")} Enums 0/ `,
+      `${getGreen(pad(enumsKeys.length, 2))} Enums created`,
+      `for [${enumsKeys.map((c) => getGreen(c)).join(",")}]`
+    );
+
     let ctxModules = [];
     const moduleNames = getDirectories(modulePath);
     moduleNames.forEach((moduleName) => {
@@ -206,6 +317,8 @@ export function gen(modulePath) {
     });
     dataCtxModules.push(`	};`);
     dataCtxModules.push(`}`);
+
+    createFolderIfNotExists(join(modulePath, "../graphql", genFolder));
 
     writeFileSync(
       join(modulePath, "../graphql", genFolder, "_ctxModules.ts"),

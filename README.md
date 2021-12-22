@@ -144,6 +144,8 @@ Now, enjoy! 🔥
 
 # In Addition
 
+**Enums 0/** Creates a dedicated module for all Enums with `*.graphql` and `List*.ts` to get valid graphql types & ready to use list in the UI.
+
 **Merge 1/** Generate your `resolvers.ts` and `typedefs.ts` files per module
 
 **Merge 2/** Generate global `_ctxModules.ts` (merge all `_ctxXXX.ts` of each modules)
