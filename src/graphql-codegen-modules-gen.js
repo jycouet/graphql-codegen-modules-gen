@@ -181,6 +181,7 @@ export const _enumsModule = createModule({
     );
 
     let ctxModules = [];
+    let urqlCacheModules = [];
     const moduleNames = getDirectories(modulePath);
     moduleNames.forEach((moduleName) => {
       /***************** */
@@ -289,12 +290,20 @@ export const _enumsModule = createModule({
           ctxModules.push({ moduleName, ctxName });
         }
       });
-    });
 
-    // console.log(
-    //   `  ${getGreen("✔")}  Merge done`,
-    //   `[${getGreen(moduleNames.length)} modules]`
-    // );
+      /******************* */
+      /* 5.1/ ctxModules   */
+      /******************* */
+      // Are there files starting by _urqlCache? file to add in the global _urqlCacheModules.ts file?
+      providersFiles.forEach((providerFile) => {
+        if (providerFile.startsWith("_urqlCache")) {
+          const urqlCacheName = providerFile
+            .replace("_urqlCache", "")
+            .replace(".ts", "");
+          urqlCacheModules.push({ moduleName, urqlCacheName });
+        }
+      });
+    });
 
     /******************* */
     /* 3.2/ _ctxModules   */
@@ -331,7 +340,7 @@ export const _enumsModule = createModule({
     console.log(
       `  ${getGreen("✔")} Merge 2/  ${getGreen(
         pad(ctxModules.length, 2)
-      )} contexts in ${getGreen("_gen/_ctxModules.ts")} for`,
+      )} contexts  in ${getGreen("_gen/_ctxModules.ts")}       for`,
       `[${ctxModules
         .map((c) => getGreen(c.moduleName + "#" + c.ctxName))
         .join(",")}]`
@@ -364,8 +373,51 @@ export const _enumsModule = createModule({
     console.log(
       `  ${getGreen("✔")} Merge 3/  ${getGreen(
         pad(moduleNames.length, 2)
-      )} modules  in ${getGreen("_gen/_appModules.ts")} for`,
+      )} modules   in ${getGreen("_gen/_appModules.ts")}       for`,
       `[${moduleNames.map((c) => getGreen(c)).join(",")}]`
+    );
+
+    /******************* */
+    /* 5.2/ _urqlCacheModules   */
+    /******************* */
+    let dataUrqlCacheModules = [];
+
+    urqlCacheModules.forEach((urqlCache) => {
+      dataUrqlCacheModules.push(
+        `import { urqlCache${toPascalCase(
+          urqlCache.urqlCacheName
+        )} } from '$lib/modules/${
+          urqlCache.moduleName
+        }/providers/_urqlCache${toPascalCase(urqlCache.urqlCacheName)}';`
+      );
+    });
+
+    dataUrqlCacheModules.push(``);
+    dataUrqlCacheModules.push(`export const urqlCacheModules = {`);
+    urqlCacheModules.forEach((urqlCache) => {
+      dataUrqlCacheModules.push(
+        `  ...urqlCache${toPascalCase(urqlCache.urqlCacheName)},`
+      );
+    });
+    dataUrqlCacheModules.push(`}`);
+
+    createFolderIfNotExists(join(modulePath, "../graphql", genFolder));
+
+    writeFileSync(
+      join(modulePath, "../graphql", genFolder, "_urqlCacheModules.ts"),
+      dataUrqlCacheModules.join("\r\n"),
+      (err) => {
+        console.error(err);
+      }
+    );
+
+    console.log(
+      `  ${getGreen("✔")} Merge 5/  ${getGreen(
+        pad(urqlCacheModules.length, 2)
+      )} urqlCache in ${getGreen("_gen/_urqlCacheModules.ts")} for`,
+      `[${urqlCacheModules
+        .map((c) => getGreen(c.moduleName + "#" + c.urqlCacheName))
+        .join(",")}]`
     );
   } else {
     console.error(`❌ '${modulePath}' is not a valid folder path`);

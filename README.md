@@ -66,17 +66,9 @@ _replacing `./src/lib/modules` by the location of your modules_
 yarn gen-mg
 ```
 
-### ▶ (Bonus) Execute it after your usual @graphql-codegen
+### ▶ (Bonus) Execute it before your usual @graphql-codegen
 
-At the end of your `codegen.yml` file, add (carefull, like this, you don't see logs.):
-
-```
-hooks:
-  afterAllFileWrite:
-    - yarn gen-mg
-```
-
-or with a post hook.
+with a pre hook.
 
 ## ✨ Result
 
@@ -151,3 +143,5 @@ Now, enjoy! 🔥
 **Merge 2/** Generate global `_ctxModules.ts` (merge all `_ctxXXX.ts` of each modules)
 
 **Merge 3/** Generate global `_appModules.ts` (merge all `index.ts` of each modules)
+
+**Merge 4/** Generate global `_urqlCache.ts` (merge all `_urqlCacheXXX.ts` of each modules)

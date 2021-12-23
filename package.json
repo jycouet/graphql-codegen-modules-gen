@@ -1,6 +1,6 @@
 {
   "name": "graphql-codegen-modules-gen",
-  "version": "1.5.1",
+  "version": "1.6.1",
   "description": "",
   "scripts": {
     "test": "node ./src/cli ../sveltekit-yoga/packages/main/src/lib/modules",
