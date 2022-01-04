@@ -1,9 +1,10 @@
 {
   "name": "graphql-codegen-modules-gen",
-  "version": "1.6.1",
+  "version": "1.7.0",
   "description": "",
   "scripts": {
-    "test": "node ./src/cli ../sveltekit-yoga/packages/main/src/lib/modules",
+    "test": "node ./src/cli ../my-minion-mr/packages/main/src/lib/modules",
+    "test2": "node ./src/cli ../sveltekit-yoga/packages/main/src/lib/modules",
     "build": "rollup --config ./rollup.config.js",
     "pack": "yarn pack",
     "prepush": "yarn build",

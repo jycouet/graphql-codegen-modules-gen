@@ -115,8 +115,9 @@ export function gen(modulePath) {
     for (const key in enums) {
       const list = enums[key];
       let enumFileData = `enum ${key} {
-  ${list.join("\n  ")}
-}`;
+\t${list.join("\n\t")}
+}
+`;
       writeFileSync(
         join(modulePath, "_enums", "typedefs", `ENUM.${key}.graphql`),
         enumFileData
@@ -128,20 +129,20 @@ export function gen(modulePath) {
 
     for (const key in enums) {
       const list = enums[key];
-      let enumFileData = `import { ${key} } from '$lib/graphql/_gen/graphqlClient';
+      let enumFileData = `import { ${key} } from '$graphql/_gen/clientTypes';
 
 export function getList${key}() {
-  let items: { key: ${key}; value: string }[] = [];
+\tlet items: { key: ${key}; value: string }[] = [];
 
-  ${list
-    .map((c) => {
-      return `items.push({ key: ${key}.${toPascalCase(
-        c.toLowerCase()
-      )}, value: '${toPascalCase(c.toLowerCase())}' });`;
-    })
-    .join("\n  ")}
+\t${list
+        .map((c) => {
+          return `items.push({ key: ${key}.${toPascalCase(
+            c.toLowerCase()
+          )}, value: '${toPascalCase(c.toLowerCase())}' });`;
+        })
+        .join("\n\t")}
 
-  return items;
+\treturn items;
 }
 `;
       // Write this file only if it doesn't exist!
@@ -166,7 +167,7 @@ import { typeDefs } from './_gen/typedefs';
 
 export const _enumsModule = createModule({
 	id: 'enums-module',
-	typeDefs,
+	typeDefs
 });
 `
     );
@@ -352,7 +353,7 @@ export const _enumsModule = createModule({
     let dataAppModules = [];
     moduleNames.forEach((moduleName) => {
       dataAppModules.push(
-        `import { ${moduleName}Module } from '$lib/modules/${moduleName}';`
+        `import { ${moduleName}Module } from '$modules/${moduleName}';`
       );
     });
     dataAppModules.push(``);
@@ -386,7 +387,7 @@ export const _enumsModule = createModule({
       dataUrqlCacheModules.push(
         `import { urqlCache${toPascalCase(
           urqlCache.urqlCacheName
-        )} } from '$lib/modules/${
+        )} } from '$modules/${
           urqlCache.moduleName
         }/providers/_urqlCache${toPascalCase(urqlCache.urqlCacheName)}';`
       );
