@@ -129,21 +129,18 @@ export function gen(modulePath) {
 
     for (const key in enums) {
       const list = enums[key];
+      let keyWOEnum = key.replace("Enum", "");
       let enumFileData = `import { ${key} } from '$graphql/_gen/clientTypes';
 
-export function getList${key}() {
-\tlet items: { key: ${key}; value: string }[] = [];
-
+export const ${keyWOEnum}List: Record<string, ${key}> = {
 \t${list
         .map((c) => {
-          return `items.push({ key: ${key}.${toPascalCase(
+          return `'${toPascalCase(c.toLowerCase())}' : ${key}.${toPascalCase(
             c.toLowerCase()
-          )}, value: '${toPascalCase(c.toLowerCase())}' });`;
+          )},`;
         })
-        .join("\n\t")}
-
-\treturn items;
-}
+        .join("\n\t")}      
+};
 `;
       // Write this file only if it doesn't exist!
       // Like this, you can change the value with text that will be displayed in the UI!
@@ -151,10 +148,12 @@ export function getList${key}() {
       // - List or obj?!
       // - Internationalisation?! (https://github.com/sveltejs/kit/issues/553)
       if (
-        !existsSync(join(modulePath, "_enums", "ui", "lists", `List${key}.ts`))
+        !existsSync(
+          join(modulePath, "_enums", "ui", "lists", `${keyWOEnum}List.ts`)
+        )
       ) {
         writeFileSync(
-          join(modulePath, "_enums", "ui", "lists", `List${key}.ts`),
+          join(modulePath, "_enums", "ui", "lists", `${keyWOEnum}List.ts`),
           enumFileData
         );
       }
